@@ -151,7 +151,7 @@ Fastapi-mcq-platform/
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/Prabhat9801/Fastapi-mcq-platform.git
+git clone https://github.com/yourusername/Fastapi-mcq-platform.git
 cd Fastapi-mcq-platform
 ```
 
@@ -434,39 +434,110 @@ POST /api/v1/chat/message
 
 ## 🔄 Workflow Diagram
 
+### MCQ Generation & Processing Flow
+
 ```mermaid
-graph TD
-    A[User Uploads Document] --> B[Document Processor]
-    B --> C{Document Type?}
-    C -->|PDF| D[PyPDF2/PyMuPDF Extraction]
-    C -->|DOCX| E[python-docx Extraction]
-    C -->|Image| F[Tesseract OCR]
+graph TB
+    subgraph "Document Processing"
+        A[📄 User Uploads Document] --> B[🔧 Document Processor]
+        B --> C{📋 Document Type?}
+        C -->|PDF| D[📖 PyPDF2/PyMuPDF<br/>Extraction]
+        C -->|DOCX| E[📝 python-docx<br/>Extraction]
+        C -->|Image| F[👁️ Tesseract OCR<br/>Processing]
+    end
     
-    D --> G[Text Preprocessing]
-    E --> G
-    F --> G
+    subgraph "AI Processing Pipeline"
+        D --> G[🧹 Text Preprocessing]
+        E --> G
+        F --> G
+        G --> H[🎯 CLIP Embeddings<br/>Generation]
+        H --> I[💾 ChromaDB<br/>Vector Storage]
+        I --> J[🔗 LangChain<br/>Processing]
+        J --> K[🤖 Google Gemini AI<br/>Analysis]
+        K --> L[❓ MCQ Generation<br/>& Formatting]
+    end
     
-    G --> H[CLIP Embeddings]
-    H --> I[ChromaDB Storage]
+    subgraph "Quality & Storage"
+        L --> M[✅ Question Validation<br/>& Quality Check]
+        M --> N[🗄️ Database Storage<br/>SQLite/PostgreSQL]
+        N --> O[📡 API Response<br/>to Client]
+    end
     
-    I --> J[LangChain Processing]
-    J --> K[Google Gemini AI]
-    K --> L[MCQ Generation]
+    subgraph "Test Taking Flow"
+        P[👤 User Takes Test] --> Q[📝 Answer Submission]
+        Q --> R[🎯 Automatic Scoring<br/>& Evaluation]
+        R --> S[📊 Results & Analytics<br/>Dashboard]
+    end
     
-    L --> M[Question Validation]
-    M --> N[Database Storage]
-    N --> O[API Response]
+    subgraph "AI Chat System"
+        T[💬 User Chat Query] --> U[🧠 RAG System<br/>Processing]
+        U --> I
+        U --> V[🔍 Context Retrieval<br/>from Vectors]
+        V --> W[🤖 AI Response<br/>Generation]
+        W --> X[💬 Chat Response<br/>to User]
+    end
     
-    P[User Takes Test] --> Q[Answer Submission]
-    Q --> R[Automatic Scoring]
-    R --> S[Results & Analytics]
-    
-    T[Chat Query] --> U[RAG System]
-    U --> I
-    U --> V[Context Retrieval]
-    V --> W[AI Response Generation]
-    W --> X[Chat Response]
+    style A fill:#e1f5fe
+    style O fill:#c8e6c9
+    style S fill:#fff3e0
+    style X fill:#f3e5f5
 ```
+
+### Alternative Text-Based Flow
+
+For environments where Mermaid diagrams don't render, here's the workflow in text format:
+
+#### 📄 Document Processing Pipeline
+```
+1. Document Upload → 2. Format Detection → 3. Content Extraction
+   ↓                    ↓                    ↓
+   [PDF/DOCX/Image] → [Type Analysis] → [Text/OCR Processing]
+```
+
+#### 🤖 AI Processing Chain
+```
+4. Text Preprocessing → 5. CLIP Embeddings → 6. Vector Storage
+   ↓                    ↓                    ↓
+   [Clean & Format] → [Generate Vectors] → [ChromaDB Store]
+   
+7. LangChain Process → 8. Gemini AI → 9. MCQ Generation
+   ↓                   ↓             ↓
+   [Context Setup] → [AI Analysis] → [Question Creation]
+```
+
+#### ✅ Validation & Storage
+```
+10. Quality Check → 11. Database Store → 12. API Response
+    ↓               ↓                   ↓
+    [Validate] → [SQLite/PostgreSQL] → [JSON Response]
+```
+
+#### 🎓 Test Taking Process
+```
+User Login → Select Test → Answer Questions → Submit → Auto-Score → Results
+     ↓           ↓             ↓              ↓         ↓          ↓
+  [Auth] → [Test Selection] → [UI Interface] → [DB] → [Algorithm] → [Dashboard]
+```
+
+#### 💬 Chat System Flow
+```
+User Query → RAG Processing → Vector Search → Context Retrieval → AI Response
+     ↓            ↓              ↓               ↓                ↓
+  [Input] → [Question Analysis] → [ChromaDB] → [Relevant Docs] → [Gemini AI]
+```
+
+### Key Processing Components
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Document Parser** | PyPDF2, PyMuPDF, python-docx | Extract text from various formats |
+| **OCR Engine** | Tesseract | Process image-based documents |
+| **Embeddings** | CLIP ViT-B/32 | Generate semantic vectors |
+| **Vector DB** | ChromaDB | Store and search document embeddings |
+| **AI Engine** | Google Gemini | Generate intelligent MCQs |
+| **Framework** | LangChain | Orchestrate AI workflows |
+| **Database** | SQLAlchemy + PostgreSQL/SQLite | Persistent data storage |
+| **API** | FastAPI | RESTful web service interface |
 
 ## 📁 File & Folder Details
 
