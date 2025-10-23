@@ -27,27 +27,58 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# Pydantic schemas
+# Pydantic schemas with enhanced documentation
 class CategoryCreate(BaseModel):
-    name: str
-    slug: str
-    description: Optional[str] = None
-    icon_url: Optional[str] = None
+    name: str  # Example: "Class 12th", "NEET", "JEE Main", "CBSE Grade 10"
+    slug: str  # URL-friendly version: "class-12th", "neet-2024", "jee-main" (lowercase, hyphens, no spaces)
+    description: Optional[str] = None  # Example: "CBSE Class 12 examination preparation materials and practice tests"
+    icon_url: Optional[str] = None  # Optional URL to category icon/image
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "Class 12th Physics",
+                "slug": "class-12th-physics",
+                "description": "Complete NCERT Class 12 Physics curriculum with chapter-wise tests and practice questions",
+                "icon_url": "https://example.com/physics-icon.png"
+            }
+        }
 
 
 class SubjectCreate(BaseModel):
-    category_id: int
-    name: str
-    slug: str
-    description: Optional[str] = None
+    category_id: int  # ID of the parent category (e.g., 1 for "Class 12th")
+    name: str  # Example: "Physics", "Chemistry", "Mathematics", "Biology"
+    slug: str  # URL-friendly: "physics", "chemistry", "mathematics" (lowercase, hyphens)
+    description: Optional[str] = None  # Example: "Covers mechanics, electricity, magnetism, optics, and modern physics"
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "category_id": 1,
+                "name": "Physics",
+                "slug": "physics",
+                "description": "Complete physics curriculum including mechanics, thermodynamics, electricity, magnetism, optics, and modern physics"
+            }
+        }
 
 
 class TestSeriesCreate(BaseModel):
-    subject_id: int
-    name: str
-    slug: str
-    description: Optional[str] = None
-    is_free: bool = False
+    subject_id: int  # ID of the parent subject (e.g., 1 for "Physics")
+    name: str  # Example: "Chapter 1 - Electric Charges", "Unit Test 1", "Mock Test Series"
+    slug: str  # URL-friendly: "chapter-1-electric-charges", "unit-test-1" (lowercase, hyphens)
+    description: Optional[str] = None  # Example: "Covers Coulomb's law, electric field, Gauss theorem, and electrostatic potential"
+    is_free: bool = False  # Set to True for free test series, False for premium content
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "subject_id": 1,
+                "name": "Chapter 1 - Electric Charges and Fields",
+                "slug": "chapter-1-electric-charges-fields",
+                "description": "Comprehensive test series covering electric charges, Coulomb's law, electric field, electric flux, and Gauss's theorem",
+                "is_free": False
+            }
+        }
 
 
 class TestGenerateResponse(BaseModel):
@@ -64,7 +95,22 @@ async def create_category(
     current_admin: User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
-    """Create a new exam category"""
+    """
+    Create a new exam category
+    
+    Categories are the top-level organizational units (e.g., "Class 12th", "NEET", "JEE Main")
+    
+    Field Guidelines:
+    - **name**: Human-readable category name (e.g., "Class 12th Physics", "NEET 2024")
+    - **slug**: URL-friendly identifier (lowercase, hyphens, no spaces - e.g., "class-12th-physics")
+    - **description**: Brief explanation of what this category covers
+    - **icon_url**: Optional URL to category icon (leave empty if not needed)
+    
+    Example Categories:
+    - Academic: "Class 10th", "Class 12th", "Graduation"
+    - Competitive: "NEET", "JEE Main", "JEE Advanced", "UPSC"
+    - Professional: "Banking Exams", "Railway Exams", "SSC"
+    """
     
     # Check if slug exists
     existing = db.query(Category).filter(Category.slug == category.slug).first()
@@ -188,7 +234,23 @@ async def create_subject(
     current_admin: User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
-    """Create a new subject under a category"""
+    """
+    Create a new subject under a category
+    
+    Subjects are the second-level organizational units within categories
+    
+    Field Guidelines:
+    - **category_id**: Select the parent category (use GET /categories to see available options)
+    - **name**: Subject name (e.g., "Physics", "Chemistry", "Mathematics", "Biology")
+    - **slug**: URL-friendly identifier (lowercase, hyphens - e.g., "physics", "organic-chemistry")
+    - **description**: What topics/chapters this subject covers
+    
+    Example Subjects:
+    - For "Class 12th": Physics, Chemistry, Mathematics, Biology, English
+    - For "NEET": Physics, Chemistry, Biology (Botany), Biology (Zoology)
+    - For "JEE Main": Physics, Chemistry, Mathematics
+    - For "Banking": Quantitative Aptitude, Reasoning, English, General Knowledge
+    """
     
     # Verify category exists
     category = db.query(Category).filter(Category.id == subject.category_id).first()
@@ -306,7 +368,24 @@ async def create_test_series(
     current_admin: User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
-    """Create a new test series under a subject"""
+    """
+    Create a new test series under a subject
+    
+    Test series are collections of tests/quizzes within a subject
+    
+    Field Guidelines:
+    - **subject_id**: Select the parent subject (use GET /subjects to see available options)
+    - **name**: Descriptive test series name (e.g., "Chapter 1 - Electric Charges", "Mock Test Series 1")
+    - **slug**: URL-friendly identifier (lowercase, hyphens - e.g., "chapter-1-electric-charges")
+    - **description**: What specific topics/concepts this test series covers
+    - **is_free**: Set to true for free content, false for premium/paid content
+    
+    Example Test Series:
+    - Chapter-wise: "Chapter 1 - Kinematics", "Chapter 2 - Newton's Laws"
+    - Topic-wise: "Organic Chemistry Basics", "Coordinate Geometry"
+    - Test Types: "Weekly Mock Tests", "Previous Year Questions", "Concept Check Tests"
+    - Difficulty-based: "Foundation Level Tests", "Advanced Problem Solving"
+    """
     
     # Verify subject exists
     subject = db.query(Subject).filter(Subject.id == test_series.subject_id).first()
@@ -578,12 +657,30 @@ async def generate_test_fast(
     db: Session = Depends(get_db)
 ):
     """
-    ⚡ FAST test generation using CLIP + ChromaDB + Gemini
-    Based on optimized app.py implementation
+    ⚡ FAST test generation using AI from PDF documents
     
-    - No OCR required (digital PDFs only)
-    - 3-5x faster than standard generation
-    - Uses CLIP embeddings + RAG approach
+    Upload a PDF and automatically generate MCQ tests with AI
+    
+    Form Field Guidelines:
+    - **file**: Upload PDF document (digital PDFs work best, max 50MB)
+    - **test_series_id**: Select parent test series (use GET /test-series to see options)
+    - **test_name**: Name for the generated test (e.g., "Chapter 1 Practice Test")
+    - **num_questions**: Number of questions to generate (recommended: 10-30)
+    - **difficulty_level**: Choose from "easy", "medium", or "hard"
+    - **topic_scope**: Either "comprehensive" for full coverage or specific topic name
+    - **duration_minutes**: Test time limit in minutes (typically 1-2 minutes per question)
+    - **specific_pages**: Page range to focus on (e.g., "1-50" for pages 1 to 50, leave empty for full document)
+    
+    Page Range Examples:
+    - "1-50" = Pages 1 to 50 only
+    - "10,15,20-25" = Pages 10, 15, and 20 to 25
+    - Leave empty = Use entire document
+    
+    Tips for Best Results:
+    - Use clear, text-based PDFs (not scanned images)
+    - Specify page ranges for chapter-specific tests
+    - Choose appropriate difficulty level for your audience
+    - Use descriptive test names for better organization
     """
     
     # Verify test series exists
