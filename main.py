@@ -33,6 +33,14 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
     
+    # Create admin user automatically
+    try:
+        from create_admin import create_admin_user
+        create_admin_user()
+        logger.info("Admin user creation process completed")
+    except Exception as e:
+        logger.warning(f"Admin user creation failed: {str(e)}")
+    
     # Initialize vector database
     from app.services.vector_service import initialize_vector_db
     initialize_vector_db()
