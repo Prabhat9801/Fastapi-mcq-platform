@@ -41,7 +41,7 @@ Thumbs.db
 *.swo
 
 # Pre-trained Models Directory (exclude entire models folder)
-models/
+
 
 # Monitoring data
 monitoring/data/
