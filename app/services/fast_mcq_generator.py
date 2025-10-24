@@ -14,6 +14,7 @@ from transformers import CLIPProcessor, CLIPModel
 import secrets
 import os
 import numpy as np
+import random
 
 from app.core.config import settings
 from app.core.exceptions import AppException
@@ -436,6 +437,42 @@ class FastMCQGenerator:
             logger.warning(f"Error detecting subject type: {e}")
             return 'general'
     
+    def _randomize_answer_positions(self, mcqs: List[Dict]) -> List[Dict]:
+        """
+        Post-process MCQs to randomize answer positions
+        Ensures correct answers are distributed across all option positions
+        """
+        try:
+            randomized_mcqs = []
+            
+            for mcq in mcqs:
+                options = mcq["options"].copy()
+                correct_index = mcq["correct_answer_index"]
+                
+                # Get the correct answer
+                correct_answer = options[correct_index]
+                
+                # Generate a new random position for correct answer (0-3)
+                new_correct_index = random.randint(0, 3)
+                
+                # If the new position is different, swap the answers
+                if new_correct_index != correct_index:
+                    # Swap correct answer to new position
+                    options[correct_index], options[new_correct_index] = options[new_correct_index], options[correct_index]
+                
+                randomized_mcqs.append({
+                    "question": mcq["question"],
+                    "options": options,
+                    "correct_answer_index": new_correct_index
+                })
+            
+            logger.info(f"Randomized answer positions for {len(mcqs)} questions")
+            return randomized_mcqs
+            
+        except Exception as e:
+            logger.warning(f"Error randomizing answers, returning original: {e}")
+            return mcqs
+    
     def generate_mcqs(
         self,
         context: str,
@@ -635,7 +672,10 @@ Generate {num_questions} English questions now, focusing on mathematical concept
             if not mcqs or len(mcqs) == 0:
                 raise AppException("Failed to generate MCQs")
             
-            logger.info(f"Generated {len(mcqs)} MCQs")
+            # Apply post-processing randomization to fix answer bias
+            mcqs = self._randomize_answer_positions(mcqs)
+            
+            logger.info(f"Generated {len(mcqs)} MCQs with randomized answer positions")
             return mcqs
             
         except Exception as e:
