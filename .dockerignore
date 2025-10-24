@@ -1,6 +1,5 @@
 # .dockerignore
 myenv/
-models/
 __pycache__/
 *.pyc
 *.pyo
