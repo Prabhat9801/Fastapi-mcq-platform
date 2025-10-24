@@ -176,7 +176,44 @@ Fastapi-mcq-platform/
 └── README.md                       # Project documentation
 ```
 
-## ⚙️ Installation & Setup
+## 🚀 Quick Start with Docker
+
+### 🐳 Using Pre-built Docker Image (Recommended)
+
+The easiest way to get started is using the pre-built Docker image from Docker Hub:
+
+```bash
+# Pull the latest image from Docker Hub
+docker pull prabhat9801/fastapi_mcq_platform
+
+# Run the container
+docker run -p 8000:8000 prabhat9801/fastapi_mcq_platform
+
+# Access the application
+# API Documentation: http://localhost:8000/api/docs
+# Health Check: http://localhost:8000/health
+```
+
+### 🔧 Environment Variables for Docker
+
+To customize the Docker deployment, you can pass environment variables:
+
+```bash
+docker run -p 8000:8000 \
+  -e GOOGLE_API_KEY="your-google-api-key" \
+  -e DATABASE_URL="sqlite:///./mcq_platform.db" \
+  -e SECRET_KEY="your-secret-key" \
+  prabhat9801/fastapi_mcq_platform
+```
+
+### 📦 Docker Hub Repository
+
+- **Docker Hub**: [prabhat9801/fastapi_mcq_platform](https://hub.docker.com/r/prabhat9801/fastapi_mcq_platform)
+- **GitHub Repository**: [Prabhat9801/Fastapi-mcq-platform](https://github.com/Prabhat9801/Fastapi-mcq-platform)
+
+---
+
+## ⚙️ Manual Installation & Setup
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -186,7 +223,7 @@ Fastapi-mcq-platform/
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/Fastapi-mcq-platform.git
+git clone https://github.com/Prabhat9801/Fastapi-mcq-platform.git
 cd Fastapi-mcq-platform
 ```
 
@@ -870,7 +907,112 @@ User Query → RAG Processing → Vector Search → Context Retrieval → AI Res
 
 ## 🚢 Deployment
 
-### Local Deployment
+## 🚢 Deployment
+
+### 🐳 Docker Deployment (Production Ready)
+
+#### Option 1: Using Pre-built Image from Docker Hub
+```bash
+# Pull and run the latest image
+docker pull prabhat9801/fastapi_mcq_platform
+docker run -d -p 8000:8000 \
+  --name mcq-platform \
+  -e GOOGLE_API_KEY="your-api-key" \
+  -e SECRET_KEY="your-secret-key" \
+  prabhat9801/fastapi_mcq_platform
+```
+
+#### Option 2: Build Your Own Image
+```bash
+# Clone the repository
+git clone https://github.com/Prabhat9801/Fastapi-mcq-platform.git
+cd Fastapi-mcq-platform
+
+# Build the Docker image
+docker build -t fastapi-mcq-platform .
+
+# Run the container
+docker run -d -p 8000:8000 \
+  --name mcq-platform \
+  -e GOOGLE_API_KEY="your-api-key" \
+  -e SECRET_KEY="your-secret-key" \
+  fastapi-mcq-platform
+```
+
+#### Docker Compose (Recommended for Production)
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  mcq-platform:
+    image: prabhat9801/fastapi_mcq_platform
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=your-google-api-key
+      - DATABASE_URL=postgresql://user:password@db:5432/mcq_platform
+      - SECRET_KEY=your-secret-key
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=mcq_platform
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    
+volumes:
+  postgres_data:
+```
+
+```bash
+# Run with Docker Compose
+docker-compose up -d
+```
+
+### 🌐 Cloud Deployment
+
+#### Deploy to any cloud platform that supports Docker:
+
+**AWS ECS/EKS:**
+```bash
+# Use the Docker image: prabhat9801/fastapi_mcq_platform
+```
+
+**Google Cloud Run:**
+```bash
+gcloud run deploy mcq-platform \
+  --image=prabhat9801/fastapi_mcq_platform \
+  --platform=managed \
+  --region=us-central1 \
+  --allow-unauthenticated
+```
+
+**Azure Container Instances:**
+```bash
+az container create \
+  --resource-group myResourceGroup \
+  --name mcq-platform \
+  --image prabhat9801/fastapi_mcq_platform \
+  --ports 8000
+```
+
+**DigitalOcean App Platform:**
+- Use Docker Hub image: `prabhat9801/fastapi_mcq_platform`
+- Set environment variables in the dashboard
+
+### Local Development
 ```bash
 # Clone and setup
 git clone <repository-url>
@@ -887,20 +1029,33 @@ cp .env.example .env
 python main.py
 ```
 
-### Docker Deployment
-```dockerfile
-# Dockerfile example
-FROM python:3.10-slim
+### 🐳 Building Custom Docker Image
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+If you want to build your own Docker image with modifications:
 
-COPY . .
-EXPOSE 8000
+```bash
+# Clone the repository
+git clone https://github.com/Prabhat9801/Fastapi-mcq-platform.git
+cd Fastapi-mcq-platform
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Build the image
+docker build -t your-username/fastapi-mcq-platform .
+
+# Run the container
+docker run -p 8000:8000 your-username/fastapi-mcq-platform
+
+# Push to your Docker Hub (optional)
+docker tag your-username/fastapi-mcq-platform your-username/fastapi-mcq-platform:latest
+docker push your-username/fastapi-mcq-platform:latest
 ```
+
+### Docker Image Details
+
+- **Base Image**: `python:3.10-slim`
+- **Exposed Port**: `8000`
+- **Working Directory**: `/app`
+- **Pre-installed**: All dependencies from `requirements.txt`
+- **Auto-runs**: Admin user creation on startup
 
 ### Heroku Deployment
 1. **Prepare Procfile** (already included)
@@ -909,6 +1064,13 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```bash
 heroku create your-app-name
 git push heroku main
+```
+
+**Note**: For easier deployment, consider using the Docker image:
+```bash
+# Deploy using Docker on Heroku
+heroku container:push web --app your-app-name
+heroku container:release web --app your-app-name
 ```
 
 ### Production Considerations
@@ -966,13 +1128,18 @@ pytest tests/test_mcq_generator.py
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 👥 Support
+## � Repository Links
+
+- **GitHub Repository**: [https://github.com/Prabhat9801/Fastapi-mcq-platform](https://github.com/Prabhat9801/Fastapi-mcq-platform)
+- **Docker Hub**: [https://hub.docker.com/r/prabhat9801/fastapi_mcq_platform](https://hub.docker.com/r/prabhat9801/fastapi_mcq_platform)
+
+## �👥 Support
 
 ### Getting Help
-- **Documentation**: Check this README and API docs
-- **Issues**: Report bugs via GitHub Issues
-- **Discussions**: Use GitHub Discussions for questions
-- **Email**: Contact the development team
+- **Documentation**: Check this README and API docs at `http://localhost:8000/api/docs`
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/Prabhat9801/Fastapi-mcq-platform/issues)
+- **Discussions**: Use [GitHub Discussions](https://github.com/Prabhat9801/Fastapi-mcq-platform/discussions) for questions
+- **Docker Hub**: Check [Docker Hub repository](https://hub.docker.com/r/prabhat9801/fastapi_mcq_platform) for image updates
 
 ### Community
 - Star ⭐ the repository if you find it useful
