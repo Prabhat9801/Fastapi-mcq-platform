@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Smart MCQ Platform"
     DEBUG: bool = True
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = int(os.getenv("PORT", "8000"))
     
     # Database
     DATABASE_URL: str = "sqlite:///./mcq_platform.db"

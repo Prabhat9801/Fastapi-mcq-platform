@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1 import api_router
 from app.core.exceptions import AppException
+from create_admin import create_admin_user
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +33,15 @@ async def lifespan(app: FastAPI):
     # Create database tables
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
+    
+    # Create admin user automatically
+    try:
+        create_admin_user()
+        logger.info("Admin user creation process completed")
+    except ImportError as e:
+        logger.error(f"Failed to import admin creation module: {str(e)}")
+    except Exception as e:
+        logger.warning(f"Admin user creation failed (may already exist): {str(e)}")
     
     # Initialize vector database
     from app.services.vector_service import initialize_vector_db
